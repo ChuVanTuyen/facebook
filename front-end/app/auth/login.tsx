@@ -92,7 +92,7 @@ export default function Login() {
         </Button>
       </div>
       <div className="col-span-3">
-        <div>
+        <div className="mt-10 px-40">
           {items.map((item, idx) => (
             <span className="mr-4" key={idx}>
               {item}

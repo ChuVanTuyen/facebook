@@ -4,6 +4,7 @@ import { Button } from "~/components/ui/button";
 import FacebookIcon from "~/components/icon/FacebookIcon";
 import { dataFooterLogin } from "./consts/login";
 import { useForm } from "react-hook-form";
+import { Link } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -87,9 +88,15 @@ export default function Login() {
         <Button size="lg" variant="ghost" className="h-11 rounded-full">
           Quên mật khẩu?
         </Button>
-        <Button size="lg" variant="outline" className="mt-8 h-11 rounded-full">
-          Tạo tài khoản mới?
-        </Button>
+        <Link to="/register" className="w-full mt-8">
+          <Button
+            size="lg"
+            variant="outline"
+            className="h-11 w-full rounded-full"
+          >
+            Tạo tài khoản mới?
+          </Button>
+        </Link>
       </div>
       <div className="col-span-3">
         <div className="mt-10 px-40">

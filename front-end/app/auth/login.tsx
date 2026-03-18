@@ -14,7 +14,6 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Login() {
-  const items = dataFooterLogin;
   const {
     register,
     handleSubmit,
@@ -100,7 +99,7 @@ export default function Login() {
       </div>
       <div className="col-span-3">
         <div className="mt-10 px-40">
-          {items.map((item, idx) => (
+          {dataFooterLogin.map((item, idx) => (
             <span className="mr-4" key={idx}>
               {item}
             </span>

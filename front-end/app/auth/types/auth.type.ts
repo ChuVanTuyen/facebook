@@ -4,7 +4,7 @@ type RegisterValue = {
   email: string;
   password: string;
   gender: string;
-  dateOfBird: {
+  dateOfBirth: {
     day: number;
     month: number;
     year: number;

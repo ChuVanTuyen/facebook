@@ -14,9 +14,10 @@ import {
 import { Button } from "~/components/ui/button";
 import { dataFooterLogin } from "./consts/login";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getDaysInMonth } from "~/lib/utils";
 import { Field } from "~/components/ui/field";
+import { SelectComponent } from "./components/SelectComponent";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -31,8 +32,10 @@ export default function Register() {
     handleSubmit,
     watch,
     setValue,
+    setError,
+    clearErrors,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitted },
   } = useForm<RegisterValue>({
     mode: "onTouched",
   });
@@ -41,12 +44,14 @@ export default function Register() {
   };
 
   const currentYear = dayjs().year();
-  const year = watch("dateOfBird.year");
-  const month = watch("dateOfBird.month");
-  const day = watch("dateOfBird.day");
+  const { dateOfBirth } = watch();
+  const { day, month, year } = dateOfBirth || {};
 
-  const years = Array.from({ length: 120 }, (_, i) => currentYear - i);
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+  const years = useMemo(
+    () => Array.from({ length: 120 }, (_, i) => currentYear - i),
+    [currentYear],
+  );
+  const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const [days, setDays] = useState<number[]>(
     Array.from({ length: 31 }, (_, i) => i + 1),
   );
@@ -59,17 +64,21 @@ export default function Register() {
     setDays(newDays);
 
     if (day && day > totalDays) {
-      setValue("dateOfBird.day", totalDays);
+      setValue("dateOfBirth.day", totalDays);
     }
   }, [year, month]);
 
-  const validateDate = () => {
-    if (!day || !month || !year) {
-      return "Select your date of birth. You can change who can see this later.";
+  useEffect(() => {
+    if ((!day || !month || !year) && isSubmitted) {
+      setError("dateOfBirth", {
+        type: "manual",
+        message:
+          "Select your date of birth. You can change who can see this later.",
+      });
+    } else {
+      clearErrors("dateOfBirth");
     }
-    return true;
-  };
-
+  }, [day, month, year, isSubmitted]);
   return (
     <div>
       <div className="max-w-150 px-3 py-10 mx-auto">
@@ -119,93 +128,49 @@ export default function Register() {
             </div>
           </div>
           <div className="mt-3 mb-1 font-semibold">
-            Date of bird <CircleQuestionIcon className="inline-block h-6 w-6" />
+            Date of birth{" "}
+            <CircleQuestionIcon className="inline-block h-6 w-6" />
           </div>
           <div className="grid grid-cols-3 gap-x-2">
             <Controller
-              name="dateOfBird.day"
+              name="dateOfBirth.day"
               control={control}
-              rules={{ validate: validateDate }}
               render={({ field }) => (
-                <Field data-invalid>
-                  <Select
-                    onValueChange={(val) => field.onChange(Number(val))}
-                    value={field.value ? field.value + "" : undefined}
-                  >
-                    <SelectTrigger
-                      className="h-15! w-full"
-                      aria-invalid={!!errors.dateOfBird?.day}
-                    >
-                      <SelectValue placeholder="Day" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {days.map((item, idx) => (
-                        <SelectItem value={item + ""} key={idx}>
-                          {item}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
+                <SelectComponent
+                  {...field}
+                  options={days}
+                  placeholder="Day"
+                  isError={!!errors.dateOfBirth}
+                />
               )}
             />
             <Controller
-              name="dateOfBird.month"
+              name="dateOfBirth.month"
               control={control}
-              rules={{ validate: validateDate }}
               render={({ field }) => (
-                <Field data-invalid>
-                  <Select
-                    onValueChange={(val) => field.onChange(Number(val))}
-                    value={field.value ? field.value + "" : undefined}
-                  >
-                    <SelectTrigger
-                      className="h-15! w-full"
-                      aria-invalid={!!errors.dateOfBird?.month}
-                    >
-                      <SelectValue placeholder="Month" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {months.map((item, idx) => (
-                        <SelectItem value={item + ""} key={idx}>
-                          {item}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
+                <SelectComponent
+                  {...field}
+                  options={months}
+                  placeholder="Month"
+                  isError={!!errors.dateOfBirth}
+                />
               )}
             />
             <Controller
-              name="dateOfBird.year"
+              name="dateOfBirth.year"
               control={control}
-              rules={{ validate: validateDate }}
               render={({ field }) => (
-                <Field data-invalid>
-                  <Select
-                    onValueChange={(val) => field.onChange(Number(val))}
-                    value={field.value ? field.value + "" : undefined}
-                  >
-                    <SelectTrigger
-                      className="h-15! w-full"
-                      aria-invalid={!!errors.dateOfBird?.year}
-                    >
-                      <SelectValue placeholder="Year" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {years.map((item, idx) => (
-                        <SelectItem value={item + ""} key={idx}>
-                          {item}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
+                <SelectComponent
+                  {...field}
+                  options={years}
+                  placeholder="Year"
+                  isError={!!errors.dateOfBirth}
+                />
               )}
             />
-            {errors.dateOfBird?.day && (
+            {errors.dateOfBirth && (
               <p className="col-span-3 text-red-500 text-sm mt-1">
-                {errors.dateOfBird.day.message}
+                {errors.dateOfBirth.message}
               </p>
             )}
           </div>
@@ -219,7 +184,7 @@ export default function Register() {
             control={control}
             rules={{ required: true }}
             render={({ field }) => (
-              <Field data-invalid>
+              <Field data-invalid={!!errors.gender}>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger
                     className="h-15! w-full"
@@ -235,7 +200,7 @@ export default function Register() {
               </Field>
             )}
           />
-          {errors.dateOfBird?.day && (
+          {errors.gender && (
             <p className="col-span-3 text-red-500 text-sm mt-1">
               Please choose a gender. You can change who can see this later.
             </p>
@@ -267,9 +232,10 @@ export default function Register() {
           <div className="mt-3 mb-1 font-semibold">Password</div>
           <Input
             {...register("password", {
-              required: "Enter a combination of at least six numbers, letters and punctuation marks (such as ! and &).",
+              required:
+                "Enter a combination of at least six numbers, letters and punctuation marks (such as ! and &).",
             })}
-            aria-invalid={!!errors.email}
+            aria-invalid={!!errors.password}
             placeholder="Password"
             className="h-15"
           />
@@ -319,7 +285,6 @@ export default function Register() {
           <Button
             className="h-11 w-full rounded-full mt-3"
             size="lg"
-            type="submit"
             variant="outline"
           >
             Cancel
